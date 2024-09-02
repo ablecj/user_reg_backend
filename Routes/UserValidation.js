@@ -400,45 +400,42 @@ router.post('/verify-aadhar', async (req, res) => {
 });
 
 
-// route for handling the pan details 
-router.post('/verify-pan', async(req,res)=> {
+router.post('/verify-pan', async (req, res) => {
   const { PAN, email } = req.body;
 
   if (!PAN || !email) {
     return res.status(400).json({ message: 'PAN and email are required.' });
   }
 
-  const url = 'https://pan-card-verification1.p.rapidapi.com/v3/tasks/sync/verify_with_source/ind_pan';
+  const url = 'https://pan-information-verification-api.p.rapidapi.com/validation/api/v1/panverification';
   const options = {
     method: 'POST',
     headers: {
-      'x-rapidapi-key': process.env.PAN_KEY, 
+      'x-rapidapi-key': process.env.PAN_KEY,
       'x-rapidapi-host': process.env.PAN_HOST,
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      task_id: '74f4c926-250c-43ca-9c53-453e87ceacd1',
-      group_id: '8e16424a-58fc-4ba4-ab20-5bc8e7c3c41e',
-      data: {
-        id_number: PAN,
-      },
-    }),
+      pan: PAN,
+      consent: 'yes',
+      consent_text: 'I hereby declare my consent agreement for fetching my information via AITAN Labs API'
+    })
   };
 
   try {
     const response = await fetch(url, options);
     const result = await response.json();
 
-    if (response.ok && result?.status === 'success') { // Adjust this check according to the actual API response
-      // Perform the database operation to save the PAN number using the email from the session
+    if (response.ok && result.status === 'success') {
+      // Perform the database operation to save the PAN number using the email
       const updatedUser = await User.findOneAndUpdate(
-        { email }, // Find the user by email
-        { $set: { PAN } }, // Update the PAN field
-        { new: true } // Return the updated document
+        { email },
+        { $set: { PAN: result.pan } },
+        { new: true }
       );
 
       if (updatedUser) {
-        res.status(200).json({ message: 'PAN verified and data saved successfully' });
+        res.status(200).json({ message: 'PAN verified and data saved successfully', result });
       } else {
         res.status(404).json({ message: 'User not found' });
       }
