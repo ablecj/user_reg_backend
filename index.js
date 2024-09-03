@@ -15,7 +15,7 @@ const PORT = 8080;
 
 // allowed origins
 const allowedOrigins = [
-  'http://localhost:3000',  // For local development
+  // 'http://localhost:3000',  // For local development
   'https://user-reg-frontend.vercel.app'  // Your hosted frontend
 ];
 
