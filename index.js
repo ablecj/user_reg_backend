@@ -14,11 +14,22 @@ dotenv.config();
 const PORT = 8080;
 
 // allowed origins
-const allowedOrigins = ['http://localhost:3000'];
+const allowedOrigins = [
+  'http://localhost:3000',  // For local development
+  'https://user-reg-frontend.vercel.app'  // Your hosted frontend
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
 
 app.use(bodyParser.json());
-
-app.use(cors());
 
 
 
